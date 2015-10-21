@@ -7,16 +7,16 @@ angular.module('angularRestfulAuth')
 
         $scope.signin = function() {
             var formData = {
-                email: $scope.email,
+                username: $scope.username,
                 password: $scope.password
             }
 
             Main.signin(formData, function(res) {
-                if (res.type == false) {
-                    alert(res.data)    
+                if (res.access_token === undefined) {
+                    alert(res)    
                 } else {
-                    $localStorage.token = res.data.token;
-                    window.location = "/";    
+                    $localStorage.token = res.access_token;
+                    window.location = "/web";    
                 }
             }, function() {
                 $rootScope.error = 'Failed to signin';
@@ -34,7 +34,7 @@ angular.module('angularRestfulAuth')
                     alert(res.data)
                 } else {
                     $localStorage.token = res.data.token;
-                    window.location = "/"    
+                    window.location = "/web"    
                 }
             }, function() {
                 $rootScope.error = 'Failed to signup';
@@ -51,7 +51,7 @@ angular.module('angularRestfulAuth')
 
         $scope.logout = function() {
             Main.logout(function() {
-                window.location = "/"
+                window.location = "/web"
             }, function() {
                 alert("Failed to logout!");
             });

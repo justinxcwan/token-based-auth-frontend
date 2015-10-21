@@ -2,7 +2,8 @@
 
 angular.module('angularRestfulAuth')
     .factory('Main', ['$http', '$localStorage', function($http, $localStorage){
-        var baseUrl = "http://angular-restful-auth.herokuapp.com";
+         var getUrl = window.location;
+         var baseUrl = getUrl.protocol + "//" + getUrl.host;
         function changeUser(user) {
             angular.extend(currentUser, user);
         }
@@ -27,13 +28,17 @@ angular.module('angularRestfulAuth')
         function getUserFromToken() {
             var token = $localStorage.token;
             var user = {};
-            if (typeof token !== 'undefined') {
-                var encoded = token.split('.')[1];
-                user = JSON.parse(urlBase64Decode(encoded));
-            }
+            // if (typeof token !== 'undefined') {
+            //     var encoded = token.split('.')[1];
+            //     user = JSON.parse(urlBase64Decode(encoded));
+            // }
             return user;
         }
 
+        function base64Encode(input) {
+            return btoa(unescape(encodeURIComponent(input)));
+        }
+            
         var currentUser = getUserFromToken();
 
         return {
@@ -41,10 +46,35 @@ angular.module('angularRestfulAuth')
                 $http.post(baseUrl + '/signin', data).success(success).error(error)
             },
             signin: function(data, success, error) {
-                $http.post(baseUrl + '/authenticate', data).success(success).error(error)
+                data.client_id = 'clientapp';
+                data.client_secret = '123456'; 
+                data.grant_type = 'password';
+                data.scope = 'read write';
+
+                var encoded = base64Encode(data.client_id + ':' + data.client_secret);
+
+                var options = angular.extend({
+                                headers: {
+                                    "Authorization": 'Basic ' + encoded,
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                }
+                            }, {});
+
+                $http({
+                    method: 'POST',
+                    url: baseUrl + '/uaa/oauth/token',
+                    headers: options.headers,
+                    transformRequest: function(obj) {
+                        var str = [];
+                        for(var p in obj)
+                            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                        return str.join("&");
+                    },
+                    data: data
+                }).success(success).error(error);
             },
             me: function(success, error) {
-                $http.get(baseUrl + '/me').success(success).error(error)
+                $http.get(baseUrl + '/uaa/me').success(success).error(error)
             },
             logout: function(success) {
                 changeUser({});
