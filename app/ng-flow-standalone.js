@@ -1567,7 +1567,7 @@
  * });
  * @name flowFactoryProvider
  */
-angular.module('flow.provider', [])
+angular.module('flow.provider', ['angular-oauth2'])
 .provider('flowFactory', function() {
   'use strict';
   /**
@@ -1584,6 +1584,8 @@ angular.module('flow.provider', [])
    * @return {Flow}
    */
   this.factory = function (options) {
+
+    
     return new Flow(options);
   };
 
@@ -1606,13 +1608,24 @@ angular.module('flow.provider', [])
     this.events.push([event, callback]);
   };
 
-  this.$get = function() {
+  this.$get = function(OAuthToken) {
     var fn = this.factory;
     var defaults = this.defaults;
     var events = this.events;
+
+
+
     return {
       'create': function(opts) {
         // combine default options with global options and options
+
+        opts.headers = function() {
+          var headers = {};
+          headers.Authorization = OAuthToken.getAuthorizationHeader();
+
+          return headers;
+        }
+
         var flow = fn(angular.extend({}, defaults, opts));
         angular.forEach(events, function (event) {
           flow.on(event[0], event[1]);
