@@ -3,17 +3,31 @@
 angular.module('angularRestfulAuth', [
     'ngStorage',
     'ngRoute',
-    'angular-loading-bar'
+    'flow'
 ])
-.config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
+.config(['$routeProvider', '$httpProvider', 'flowFactoryProvider', 
+    function ($routeProvider, $httpProvider, flowFactoryProvider) {
+    
+    flowFactoryProvider.defaults = {
+        target: '/upload',
+        permanentErrors: [404, 500, 501],
+        maxChunkRetries: 1,
+        chunkRetryInterval: 5000,
+        simultaneousUploads: 1,
+        chunkSize: 64 * 1024,
+    };
+
+    flowFactoryProvider.on('catchAll', function (event) {
+        console.log('catchAll', arguments);
+    });
 
     $routeProvider.
         when('/', {
             templateUrl: 'partials/home.html',
             controller: 'HomeCtrl'
         }).
-        when('/signin', {
-            templateUrl: 'partials/signin.html',
+        when('/login', {
+            templateUrl: 'partials/login.html',
             controller: 'HomeCtrl'
         }).
         when('/signup', {
@@ -22,7 +36,11 @@ angular.module('angularRestfulAuth', [
         }).
         when('/me', {
             templateUrl: 'partials/me.html',
-            controller: 'HomeCtrl'
+            controller: 'MeCtrl'
+        }).
+        when('/upload', {
+            templateUrl: 'partials/upload.html',
+            controller: 'UploadCtrl'
         }).
         otherwise({
             redirectTo: '/'
@@ -32,14 +50,14 @@ angular.module('angularRestfulAuth', [
             return {
                 'request': function (config) {
                     config.headers = config.headers || {};
-                    if ($localStorage.token) {
-                        config.headers.Authorization = 'Bearer ' + $localStorage.token;
+                    if ($localStorage.token && $localStorage.access_token) {
+                        config.headers.Authorization = 'Bearer ' + $localStorage.token.access_token;
                     }
                     return config;
                 },
                 'responseError': function(response) {
                     if(response.status === 401 || response.status === 403) {
-                        $location.path('/signin');
+                        $location.path('/login');
                     }
                     return $q.reject(response);
                 }

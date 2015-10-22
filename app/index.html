@@ -11,8 +11,8 @@
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="bootstrap.min.css">
-    <link rel="stylesheet" href="lib/loading-bar.css">
-
+ <!--    <link rel="stylesheet" href="lib/loading-bar.css">
+ -->
     <style>
         body {
             padding-top: 60px;
@@ -44,10 +44,11 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a ng-href="#/">Home</a></li>
-                    <li data-ng-show="token"><a ng-href="#/me">Me</a></li>
-                    <li data-ng-hide="token"><a ng-href="#/signin">Signin</a></li>
-                    <li data-ng-hide="token"><a ng-href="#/signup">Signup</a></li>
-                    <li data-ng-show="token"><a ng-click="logout()">Logout</a></li>
+                    <li data-ng-show="token.access_token"><a ng-href="#/me">Me</a></li>
+                    <li data-ng-show="true"><a ng-href="#/upload">Upload logs</a></li>
+                    <li data-ng-hide="token.access_token"><a ng-href="#/login">Login</a></li>
+                    <li data-ng-hide="token.access_token"><a ng-href="#/signup">Signup</a></li>
+                    <li data-ng-show="token.access_token"><a ng-click="logout()">Logout</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
@@ -60,11 +61,13 @@
 <script src="bootstrap.min.js"></script>
 <script src="angular.min.js"></script>
 <script src="angular-route.min.js"></script>
+<script src="ng-flow-standalone.js"></script>
 <script src="lib/ngStorage.js"></script>
-<script src="lib/loading-bar.js"></script>
+<!-- <script src="lib/loading-bar.js"></script> -->
 <script src="scripts/app.js"></script>
 <script src="scripts/controllers.js"></script>
 <script src="scripts/services.js"></script>
+
 
 
 </body>

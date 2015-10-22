@@ -3,23 +3,23 @@
 /* Controllers */
 
 angular.module('angularRestfulAuth')
-    .controller('HomeCtrl', ['$rootScope', '$scope', '$location', '$localStorage', 'Main', function($rootScope, $scope, $location, $localStorage, Main) {
-
-        $scope.signin = function() {
+    .controller('HomeCtrl', ['$rootScope', '$scope', '$location', '$localStorage', 'Main', 
+        function($rootScope, $scope, $location, $localStorage, Main) {
+        $scope.login = function() {
             var formData = {
                 username: $scope.username,
                 password: $scope.password
             }
 
-            Main.signin(formData, function(res) {
+            Main.login(formData, function(res) {
                 if (res.access_token === undefined) {
                     alert(res)    
                 } else {
-                    $localStorage.token = res.access_token;
+                    $localStorage.token = res;
                     window.location = "/web";    
                 }
             }, function() {
-                $rootScope.error = 'Failed to signin';
+                $rootScope.error = 'Failed to log in';
             })
         };
 
@@ -59,12 +59,14 @@ angular.module('angularRestfulAuth')
         };
         $scope.token = $localStorage.token;
     }])
-
-.controller('MeCtrl', ['$rootScope', '$scope', '$location', 'Main', function($rootScope, $scope, $location, Main) {
-
+  .controller('MeCtrl', ['$rootScope', '$scope', '$location', 'Main', function($rootScope, $scope, $location, Main) {
         Main.me(function(res) {
             $scope.myDetails = res;
         }, function() {
             $rootScope.error = 'Failed to fetch details';
         })
-}]);
+  }])
+  .controller('UploadCtrl', ['$rootScope', '$scope', '$location', 'Main', function($rootScope, $scope, $location, Main) {
+
+  }])
+;

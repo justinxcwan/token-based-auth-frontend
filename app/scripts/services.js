@@ -45,7 +45,7 @@ angular.module('angularRestfulAuth')
             signup: function(data, success, error) {
                 $http.post(baseUrl + '/signup', data).success(success).error(error)
             },
-            signin: function(data, success, error) {
+            login: function(data, success, error) {
                 data.client_id = 'clientapp';
                 data.client_secret = '123456'; 
                 data.grant_type = 'password';
