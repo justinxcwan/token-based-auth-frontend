@@ -1,12 +1,12 @@
 'use strict';
 
 angular.module('angularRestfulAuth', [
-    'ngStorage',
     'ngRoute',
-    'flow'
+    'flow',
+    'angular-oauth2'
 ])
-.config(['$routeProvider', '$httpProvider', 'flowFactoryProvider', 
-    function ($routeProvider, $httpProvider, flowFactoryProvider) {
+.config(['$routeProvider', '$httpProvider', 'flowFactoryProvider', 'OAuthProvider',
+    function ($routeProvider, $httpProvider, flowFactoryProvider, OAuthProvider) {
     
     flowFactoryProvider.defaults = {
         target: '/upload',
@@ -19,6 +19,15 @@ angular.module('angularRestfulAuth', [
 
     flowFactoryProvider.on('catchAll', function (event) {
         console.log('catchAll', arguments);
+    });
+
+    OAuthProvider.configure({
+      baseUrl: 'http://localhost/uaa/',
+      clientId: 'clientapp',
+      clientSecret: '123456', // optional
+      options: {
+        secure: false
+      }
     });
 
     $routeProvider.
@@ -46,23 +55,40 @@ angular.module('angularRestfulAuth', [
             redirectTo: '/'
         });
 
-    $httpProvider.interceptors.push(['$q', '$location', '$localStorage', function($q, $location, $localStorage) {
-            return {
-                'request': function (config) {
-                    config.headers = config.headers || {};
-                    if ($localStorage.token && $localStorage.access_token) {
-                        config.headers.Authorization = 'Bearer ' + $localStorage.token.access_token;
-                    }
-                    return config;
-                },
-                'responseError': function(response) {
-                    if(response.status === 401 || response.status === 403) {
-                        $location.path('/login');
-                    }
-                    return $q.reject(response);
-                }
-            };
-        }]);
+    // $httpProvider.interceptors.push(['$q', '$location', '$localStorage', function($q, $location, $localStorage) {
+    //         return {
+    //             'request': function (config) {
+    //                 config.headers = config.headers || {};
+    //                 if ($localStorage.token && $localStorage.access_token) {
+    //                     config.headers.Authorization = 'Bearer ' + $localStorage.token.access_token;
+    //                 }
+    //                 return config;
+    //             },
+    //             'responseError': function(response) {
+    //                 if(response.status === 401 || response.status === 403) {
+    //                     $location.path('/login');
+    //                 }
+    //                 return $q.reject(response);
+    //             }
+    //         };
+    //     }]);
 
     }
-]);
+])
+.run(['$rootScope', '$window', '$location', 'OAuth', function($rootScope, $window, $location, OAuth) {
+    $rootScope.$on('oauth:error', function(event, rejection) {
+      // Ignore `invalid_grant` error - should be catched on `LoginController`.
+      if ('invalid_grant' === rejection.data.error) {
+        return;
+      }
+
+      // Refresh token when a `invalid_token` error occurs.
+      if ('invalid_token' === rejection.data.error) {
+        return OAuth.getRefreshToken();
+      }
+
+      $location.path('/login');
+      // Redirect to `/login` with the `error_reason`.
+      // return $window.location.href = '/login?error_reason=' + rejection.data.error;
+    });
+  }]);

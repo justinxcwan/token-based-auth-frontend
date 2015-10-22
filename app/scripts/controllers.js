@@ -3,8 +3,10 @@
 /* Controllers */
 
 angular.module('angularRestfulAuth')
-    .controller('HomeCtrl', ['$rootScope', '$scope', '$location', '$localStorage', 'Main', 
-        function($rootScope, $scope, $location, $localStorage, Main) {
+    .controller('HomeCtrl', ['$rootScope', '$scope', '$location', 'Main', 'OAuth', 
+        function($rootScope, $scope, $location, Main, OAuth) {
+        $scope.OAuth = OAuth;
+
         $scope.login = function() {
             var formData = {
                 username: $scope.username,
@@ -15,8 +17,7 @@ angular.module('angularRestfulAuth')
                 if (res.access_token === undefined) {
                     alert(res)    
                 } else {
-                    $localStorage.token = res;
-                    window.location = "/web";    
+                    window.location = "/web";
                 }
             }, function() {
                 $rootScope.error = 'Failed to log in';
@@ -34,8 +35,8 @@ angular.module('angularRestfulAuth')
                 if (res.type == false) {
                     alert(res.data)
                 } else {
-                    $localStorage.token = res.data.token;
-                    window.location = "/web"    
+                   
+                    window.location = "/web/login"    
                 }
             }, function() {
                 $rootScope.error = 'Failed to signup';
@@ -57,7 +58,7 @@ angular.module('angularRestfulAuth')
                 alert("Failed to logout!");
             });
         };
-        $scope.token = $localStorage.token;
+        
     }])
   .controller('MeCtrl', ['$rootScope', '$scope', '$location', 'Main', function($rootScope, $scope, $location, Main) {
         Main.me(function(res) {

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularRestfulAuth')
-    .factory('Main', ['$http', '$localStorage', function($http, $localStorage){
+    .factory('Main', ['$http', 'OAuth', function($http, OAuth){
          var getUrl = window.location;
          var baseUrl = getUrl.protocol + "//" + getUrl.host;
         function changeUser(user) {
@@ -26,7 +26,7 @@ angular.module('angularRestfulAuth')
         }
 
         function getUserFromToken() {
-            var token = $localStorage.token;
+            
             var user = {};
             // if (typeof token !== 'undefined') {
             //     var encoded = token.split('.')[1];
@@ -46,40 +46,43 @@ angular.module('angularRestfulAuth')
                 $http.post(baseUrl + '/signup', data).success(success).error(error)
             },
             login: function(data, success, error) {
-                data.client_id = 'clientapp';
-                data.client_secret = '123456'; 
-                data.grant_type = 'password';
-                data.scope = 'read write';
+                // data.client_id = 'clientapp';
+                // data.client_secret = '123456'; 
+                // data.grant_type = 'password';
+                // data.scope = 'read write';
 
-                var encoded = base64Encode(data.client_id + ':' + data.client_secret);
+                // var encoded = base64Encode(data.client_id + ':' + data.client_secret);
 
-                var options = angular.extend({
-                                headers: {
-                                    "Authorization": 'Basic ' + encoded,
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                }
-                            }, {});
+                // var options = angular.extend({
+                //                 headers: {
+                //                     "Authorization": 'Basic ' + encoded,
+                //                     "Content-Type": "application/x-www-form-urlencoded"
+                //                 }
+                //             }, {});
 
-                $http({
-                    method: 'POST',
-                    url: baseUrl + '/uaa/oauth/token',
-                    headers: options.headers,
-                    transformRequest: function(obj) {
-                        var str = [];
-                        for(var p in obj)
-                            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-                        return str.join("&");
-                    },
-                    data: data
-                }).success(success).error(error);
+                // $http({
+                //     method: 'POST',
+                //     url: baseUrl + '/uaa/oauth/token',
+                //     headers: options.headers,
+                //     transformRequest: function(obj) {
+                //         var str = [];
+                //         for(var p in obj)
+                //             str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                //         return str.join("&");
+                //     },
+                //     data: data
+                // }).success(success).error(error);
+                OAuth.getAccessToken(data, {}, success, error);
+                // .success(success).error(error);
             },
             me: function(success, error) {
                 $http.get(baseUrl + '/uaa/me').success(success).error(error)
             },
-            logout: function(success) {
+            logout: function(success, error) {
                 changeUser({});
-                delete $localStorage.token;
-                success();
+                
+                OAuth.revokeToken();
+                // .success(success).error(error);
             }
         };
     }
